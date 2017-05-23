@@ -67,7 +67,7 @@ up to the handler).</p>
 <p>To handle an effect we use the library function <code class="highlighter-rouge">handle(handler)(state)(prog)</code> which gives
 us a capability for the effect type that <code class="highlighter-rouge">handler</code> implements.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">handled</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">ambList</span><span class="o">)(())</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">h</span> <span class="k">=&gt;</span> <span class="n">prog</span> <span class="o">}</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">handled</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">ambList</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">h</span> <span class="k">=&gt;</span> <span class="n">prog</span> <span class="o">}</span>
 </code></pre>
 </div>
 
