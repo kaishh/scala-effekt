@@ -1,0 +1,143 @@
+<html><head><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><title>Scala Effekt</title><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Extensible algebraic effects with handlers" /><meta name="author" content="Jonathan Brachthäuser (@b-studios)" /><meta name="og:image" content="/scala-effekt/img/poster.png" /><meta name="og:title" content="Scala Effekt" /><meta name="og:site_name" content="Scala Effekt" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Extensible algebraic effects with handlers" /><meta name="twitter:image" content="/scala-effekt/img/poster.png" /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:site" content="" /><meta name="kazari-dependencies" content="" /><meta name="kazari-resolvers" content="" /><link rel="icon" type="image/png" href="/scala-effekt/img/favicon.png" /><link rel="icon" type="image/png" sizes="16x16" href="/scala-effekt/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/scala-effekt/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/scala-effekt/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/scala-effekt/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/scala-effekt/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/scala-effekt/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/scala-effekt/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/scala-effekt/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/scala-effekt/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/scala-effekt/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/scala-effekt/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/scala-effekt/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/scala-effekt/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/scala-effekt/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/scala-effekt/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/scala-effekt/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/scala-effekt/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/scala-effekt/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/scala-effekt/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/scala-effekt/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/scala-effekt/highlight/styles/atom-one-light.css" /><link rel="stylesheet" href="/scala-effekt/css/style.css" /><link rel="stylesheet" href="/scala-effekt/css/palette.css" /><link rel="stylesheet" href="/scala-effekt/css/codemirror.css" /><link rel="stylesheet" href="/scala-effekt/css/kazari-style.css" /><link rel="stylesheet" href="/scala-effekt/css/solarized-dark.css" /></head><body><header id="site-header"><div class="navbar-wrapper navbar-inverse"><div class="container"><div class="navbar-header"><button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false"><span class="sr-only">Toggle navigation</span><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button><a href="/scala-effekt/" class="brand"><div class="icon-wrapper"><span>Scala Effekt</span></div></a></div><nav class="text-right"><ul class=""><li><a href="https://github.com/b-studios/scala-effekt"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li></ul></nav></div></div><div class="jumbotron" style="background-image:url('/scala-effekt/img/jumbotron_pattern.png')"></div><div><ul class="horizontalNav">       <li><a class="" href="/scala-effekt/design.html">Design Decisions</a></li>  <li><a class="" href="/scala-effekt/first-effect.html">Getting Started</a></li>  <li><a class=" active " href="/scala-effekt/two-effects.html">Multiple Effects</a></li> </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="combining-multiple-effects-with-handlers">Combining Multiple Effects with Handlers</h1>
+<p>After having defined a single effect in <a href="./first-effect">Getting Started</a>, this quick tutorial shows how multiple, different effects can be defined and handled in <strong>Effekt</strong>.</p>
+
+<p>Again, we prepared Scasties to follow along with this tutorial.</p>
+
+<ul>
+  <li><a href="https://scastie.scala-lang.org/14UuWNqvSvu0g4seLZ4iug">Scala 2.12</a> (<a href="https://scastie.scala-lang.org/3VsqIjFNTYeQ4HBc44wEpQ">full solution</a>)</li>
+</ul>
+
+<h2 id="defining-a-second-effect">Defining a second effect</h2>
+<p>In <a href="./first-effect">Getting Started</a> we have defined ambiguity as our
+first effect. The ambiguity effect signature had one effect operation
+and looked like this:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">Amb</span> <span class="k">extends</span> <span class="nc">Eff</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">flip</span><span class="o">[</span><span class="kt">R</span><span class="o">]()</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="kt">@@</span> <span class="kt">R</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>We also defined a handler for the ambiguity effect as an implementation
+of the <code class="highlighter-rouge">Amb</code> trait, called <code class="highlighter-rouge">ambHandler</code>. To see how to combine two
+different effects, we will now first define a second (quite standard)
+effect: Mutable state. As before we start with the effect signature
+and the corresponding companion object:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">State</span><span class="o">[</span><span class="kt">S</span><span class="o">]</span> <span class="nc">extends</span> <span class="nc">Eff</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">get</span><span class="o">[</span><span class="kt">R</span><span class="o">]()</span><span class="k">:</span> <span class="kt">S</span> <span class="kt">@@</span> <span class="kt">R</span>
+  <span class="k">def</span> <span class="n">put</span><span class="o">[</span><span class="kt">R</span><span class="o">](</span><span class="n">s</span><span class="k">:</span> <span class="kt">S</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="kt">@@</span> <span class="kt">R</span>
+<span class="o">}</span>
+<span class="k">object</span> <span class="nc">State</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">get</span><span class="o">[</span><span class="kt">S</span><span class="o">]()(</span><span class="k">implicit</span> <span class="n">u</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">State</span><span class="o">[</span><span class="kt">S</span><span class="o">]])</span> <span class="k">=</span> <span class="n">use</span><span class="o">(</span><span class="n">u</span><span class="o">)</span> <span class="o">{</span> <span class="n">u</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="n">get</span><span class="o">()</span> <span class="o">}</span>
+  <span class="k">def</span> <span class="n">put</span><span class="o">[</span><span class="kt">S</span><span class="o">](</span><span class="n">s</span><span class="k">:</span> <span class="kt">S</span><span class="o">)(</span><span class="k">implicit</span> <span class="n">u</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">State</span><span class="o">[</span><span class="kt">S</span><span class="o">]])</span> <span class="k">=</span> <span class="n">use</span><span class="o">(</span><span class="n">u</span><span class="o">)</span> <span class="o">{</span> <span class="n">u</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="n">s</span><span class="o">)</span> <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<p>Having defined the effect signature, we can implement a handler that,
+like the state monad, does not actually use mutable state but passes
+the current value around through the whole program. Since state is so
+important and often used, in <strong>Effekt</strong> every handler is already
+equipped with a <em>handler state</em> that is automatically passed around
+through all handler calls.</p>
+
+<p>We simply need to define the type of the state by instantiating the
+type member <code class="highlighter-rouge">State</code>. Let us look again at the implementation of the
+type alias <code class="highlighter-rouge">A @@ R</code>:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>type @@[A, R] =
+  State =&gt;                             // the handler state
+  (A =&gt; State =&gt; Control[Out[R]]) =&gt;   // the continuation
+  Control[Out[R]]                      // the result type
+</code></pre>
+</div>
+
+<p>To handle an effect, we get hold to the current state as well as a
+continuation which takes the return value and an updated state.
+Using this definition, we can implement a state handler as:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">stateHandler</span><span class="o">[</span><span class="kt">S</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">State</span><span class="o">[</span><span class="kt">S</span><span class="o">]</span> <span class="o">{</span>
+  <span class="k">type</span> <span class="kt">Out</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="n">A</span>
+  <span class="k">type</span> <span class="kt">State</span> <span class="o">=</span> <span class="n">S</span> <span class="c1">// we use the handler state for state passing
+</span>  <span class="k">def</span> <span class="n">unit</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">(</span><span class="n">s</span><span class="o">,</span> <span class="n">a</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">a</span>
+
+  <span class="k">def</span> <span class="n">get</span><span class="o">[</span><span class="kt">R</span><span class="o">]()</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">resume</span> <span class="k">=&gt;</span> <span class="n">resume</span><span class="o">(</span><span class="n">s</span><span class="o">)(</span><span class="n">s</span><span class="o">)</span>
+  <span class="k">def</span> <span class="n">put</span><span class="o">[</span><span class="kt">R</span><span class="o">](</span><span class="n">s</span><span class="k">:</span> <span class="kt">S</span><span class="o">)</span> <span class="k">=</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="n">resume</span> <span class="k">=&gt;</span> <span class="n">resume</span><span class="o">(())(</span><span class="n">s</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Please note, that it is important not to define the result type of
+<code class="highlighter-rouge">stateHandler</code> as <code class="highlighter-rouge">State[S]</code> since the result type is more
+special (<code class="highlighter-rouge">State[S] { type Out[A] = A; type State = S }</code>).</p>
+
+<h2 id="using-amb-and-state-in-one-example">Using <code class="highlighter-rouge">Amb</code> and <code class="highlighter-rouge">State</code> in one example</h2>
+<p>Let us now use the two effects to write a program that combines them.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">State._</span><span class="o">,</span> <span class="nc">Amb</span><span class="o">.</span><span class="k">_</span>
+
+<span class="k">def</span> <span class="n">example</span><span class="o">(</span><span class="k">implicit</span> <span class="n">u1</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">State</span><span class="o">[</span><span class="kt">Int</span><span class="o">]],</span> <span class="n">u2</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">Amb</span><span class="o">])</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="k">for</span> <span class="o">{</span>
+  <span class="n">x</span> <span class="k">&lt;-</span> <span class="n">get</span><span class="o">()</span>
+  <span class="n">b</span> <span class="k">&lt;-</span> <span class="n">flip</span><span class="o">()</span>
+  <span class="k">_</span> <span class="k">&lt;-</span> <span class="k">if</span> <span class="o">(</span><span class="n">b</span><span class="o">)</span> <span class="n">put</span><span class="o">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span> <span class="k">else</span> <span class="n">pure</span><span class="o">(())</span>
+  <span class="n">y</span> <span class="k">&lt;-</span> <span class="n">get</span><span class="o">()</span>
+<span class="o">}</span> <span class="k">yield</span> <span class="o">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">)</span>
+</code></pre>
+</div>
+<p>The example program requires capabilities for both effects, a state
+effect carrying an integer and the ambiguity effect. We first retreive
+the current state, then toss a coin and depending on result mutate the
+state (or not).</p>
+
+<p>As you can see, there is nothing special to using more than one effect.
+The use of effects naturally composes.</p>
+
+<h2 id="handling-the-two-effects">Handling the two effects</h2>
+<p>As with monad transformers, we have two different ways of handling the
+two effects. Should we first handle away the ambiguity effect and then
+consider state, or the other way around? The nice thing with algebraic
+effects and handlers is that we can decide very late.</p>
+
+<p>Let’s experiment with the two options:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">result1</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">ambHandler</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">a</span> <span class="k">=&gt;</span>
+  <span class="n">handle</span><span class="o">(</span><span class="n">stateHandler</span><span class="o">[</span><span class="kt">Int</span><span class="o">])(</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">s</span> <span class="k">=&gt;</span>
+    <span class="n">example</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">result1</span><span class="o">.</span><span class="n">run</span><span class="o">()</span>
+<span class="n">res1</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">0</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>In this variant, we first handle away the state effect (remember <code class="highlighter-rouge">stateHandler.Out[A] = A</code> in our case) and then handle ambiguity (here, <code class="highlighter-rouge">ambHandler.Out[A] = List[A]</code>).
+The ambiguity handler invokes the continuation twice, once with <code class="highlighter-rouge">true</code>
+and once with <code class="highlighter-rouge">false</code>. Since the state handler is nested in the
+ambiguity handler, it will be reset for the second invocation with <code class="highlighter-rouge">false</code>
+and thus the second element in the resulting list is <code class="highlighter-rouge">0</code>.</p>
+
+<p>Commuting the two handlers, we get different results:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">result2</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">stateHandler</span><span class="o">[</span><span class="kt">Int</span><span class="o">])(</span><span class="mi">0</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">s</span> <span class="k">=&gt;</span>
+  <span class="n">handle</span><span class="o">(</span><span class="n">ambHandler</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">a</span> <span class="k">=&gt;</span>
+    <span class="n">example</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">result2</span><span class="o">.</span><span class="n">run</span><span class="o">()</span>
+<span class="n">res2</span><span class="k">:</span> <span class="kt">ambHandler.Out</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">1</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Now, ambiguity is run inside of state and the change of state carries
+over to the second coin flipping result. The result type however is the
+same, since <code class="highlighter-rouge">Id[List[_]] = List[Id[_]]</code>. Please note, that this does
+not hold in general for two arbitrary effect handlers.</p>
+</div></div></section></main><footer id="site-footer"><div class="container"><div class="row"><div class="col-xs-6"><p>Scala Effekt is designed and developed by <a href="http://b-studios.de" target="_blank">Jonathan Brachthäuser (@b-studios)</a></p></div><div class="col-xs-6"><p class="text-right"><a href="https://github.com/b-studios/scala-effekt"><span class="fa fa-github"></span>View on GitHub</a></p></div></div><div class="row"><div class="col-xs-6"><p>Website built with <a href="https://47deg.github.io/sbt-microsites/" target="_blank">Sbt-microsites</a> - © 2016 <a href="https://www.47deg.com/" target="_blank">47 Degrees</a></p></div></div></div></footer><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/scala-effekt/highlight/highlight.pack.js"></script><script>hljs.configure({
+languages:['scala','java','bash']
+});
+hljs.initHighlighting();
+             </script></body></html>
