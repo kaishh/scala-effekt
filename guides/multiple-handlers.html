@@ -10,7 +10,7 @@ define such combined handlers. Let’s start with defining the
 effect signatures for <code class="highlighter-rouge">Reader</code> and <code class="highlighter-rouge">Writer</code>.</p>
 
 <p>You can play around with the full source code for this example at this
-<a href="https://scastie.scala-lang.org/Weot74oAQAa6n0uJOpOIbA">Scastie (Scala 2.12)</a>.</p>
+<a href="https://scastie.scala-lang.org/xsU2asSTQNiEI93ocjHpSg">Scastie (Scala 2.12)</a>.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">Reader</span><span class="o">[</span><span class="kt">S</span><span class="o">]</span> <span class="nc">extends</span> <span class="nc">Eff</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">read</span><span class="o">()</span><span class="k">:</span> <span class="kt">Op</span><span class="o">[</span><span class="kt">S</span><span class="o">]</span>
