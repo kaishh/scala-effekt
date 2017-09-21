@@ -2,7 +2,7 @@
 <p>Before you can get started with <strong>Effekt</strong> you need to set up your
 environment and add <strong>Effekt</strong> as a dependency to your <code class="highlighter-rouge">build.sbt</code> file:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "de.b-studios" %% "effekt" % "0.1-SNAPSHOT"
+<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "de.b-studios" %% "effekt" % "0.2-SNAPSHOT"
 </code></pre>
 </div>
 
@@ -21,8 +21,8 @@ Then, to define our first effect, we specify the <em>effect signature</em>.</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">effekt._</span>
 
 <span class="c1">// The effect signature
-</span><span class="k">trait</span> <span class="nc">Amb</span> <span class="k">extends</span> <span class="nc">Eff</span> <span class="o">{</span> <span class="n">self</span> <span class="k">=&gt;</span>
-  <span class="k">def</span> <span class="n">flip</span><span class="o">[</span><span class="kt">R</span><span class="o">]()</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="kt">@@</span> <span class="kt">R</span>
+</span><span class="k">trait</span> <span class="nc">Amb</span> <span class="k">extends</span> <span class="nc">Eff</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">flip</span><span class="o">()</span><span class="k">:</span> <span class="kt">Op</span><span class="o">[</span><span class="kt">Boolean</span><span class="o">]</span>
 <span class="o">}</span>
 </code></pre>
 </div>
@@ -33,14 +33,10 @@ which we will encounter when we implement a handler for our effect. It
 also comes with a few handy methods and type aliases that help us
 define our effect signatures and handlers.</p>
 
-<p>For effect signatures the most important type alias one is <code class="highlighter-rouge">A @@ R</code>
-(that is <code class="highlighter-rouge">@@[A, R]</code> written as infix type constructor). The desugaring
-of the type alias is given below. For now we only have to know that all
-<em>effect operations</em> like <code class="highlighter-rouge">flip</code> have to carry an additional type
-parameter <code class="highlighter-rouge">R</code>. That is, we can read <code class="highlighter-rouge">flip</code> as a non- deterministic
-coin-flipping operation that will locally return a <code class="highlighter-rouge">Boolean</code> to the
-caller, but the overall result of all computation following <code class="highlighter-rouge">flip</code> will
-result into something that contains an <code class="highlighter-rouge">R</code>.</p>
+<p>For effect signatures the most important type alias one is <code class="highlighter-rouge">Op</code>. The
+type alias is defined in the trait <code class="highlighter-rouge">Handler</code> and also given below.
+For now we only have to know that all
+<em>effect operations</em> like <code class="highlighter-rouge">flip</code> have to be marked as an <code class="highlighter-rouge">Op</code>-eration.</p>
 
 <h2 id="using-the-amb-effect">Using the <code class="highlighter-rouge">Amb</code> effect</h2>
 
@@ -53,7 +49,7 @@ We flip a coin once and then return 2 or 3 depending on the result.</p>
 allowed to use the <code class="highlighter-rouge">Amb</code>-effect.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">prog1</span><span class="o">(</span><span class="n">amb</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">Amb</span><span class="o">])</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span>
-  <span class="n">use</span><span class="o">(</span><span class="n">amb</span><span class="o">)(</span><span class="n">amb</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="n">flip</span><span class="o">())</span> <span class="n">map</span> <span class="o">{</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="k">if</span> <span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">3</span> <span class="o">}</span>
+  <span class="n">use</span><span class="o">(</span><span class="n">amb</span><span class="o">)(</span><span class="n">amb</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">flip</span><span class="o">())</span> <span class="n">map</span> <span class="o">{</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="k">if</span> <span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="mi">2</span> <span class="k">else</span> <span class="mi">3</span> <span class="o">}</span>
 </code></pre>
 </div>
 
@@ -64,18 +60,18 @@ call to <code class="highlighter-rouge">use</code> shows us that we use the capa
 <ol>
   <li>It serves as a proof, that we are allowed to use effect operations
 defined in the <code class="highlighter-rouge">Amb</code> signature.</li>
-  <li>It carries the effect implementation (handler code) as member <code class="highlighter-rouge">amb.effect</code>.</li>
+  <li>It carries the effect implementation (handler code) as member <code class="highlighter-rouge">amb.handler</code>.</li>
 </ol>
 
 <p>The <code class="highlighter-rouge">flip</code> method in the effect signature will turn out to be
 very convenient for handler implementations. However, writing
-<code class="highlighter-rouge">use(u)(u.effect.op())</code> for every use of <code class="highlighter-rouge">op</code> can be tiresome. Hence,
+<code class="highlighter-rouge">use(u)(u.handler.op())</code> for every use of <code class="highlighter-rouge">op</code> can be tiresome. Hence,
 we establish the convention to define a second variant for each effect
 operation as part of the effect signature’s companion object:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// The effect companion object
 </span><span class="k">object</span> <span class="nc">Amb</span> <span class="o">{</span>
-  <span class="k">def</span> <span class="n">flip</span><span class="o">()(</span><span class="k">implicit</span> <span class="n">u</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">Amb</span><span class="o">])</span> <span class="k">=</span> <span class="n">use</span><span class="o">(</span><span class="n">u</span><span class="o">)</span> <span class="o">{</span> <span class="n">u</span><span class="o">.</span><span class="n">effect</span><span class="o">.</span><span class="n">flip</span><span class="o">()</span> <span class="o">}</span>
+  <span class="k">def</span> <span class="n">flip</span><span class="o">()(</span><span class="k">implicit</span> <span class="n">u</span><span class="k">:</span> <span class="kt">Use</span><span class="o">[</span><span class="kt">Amb</span><span class="o">])</span> <span class="k">=</span> <span class="n">use</span><span class="o">(</span><span class="n">u</span><span class="o">)</span> <span class="o">{</span> <span class="n">u</span><span class="o">.</span><span class="n">handler</span><span class="o">.</span><span class="n">flip</span><span class="o">()</span> <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
 </div>
@@ -93,43 +89,56 @@ implicitly passed using Scala’s feature of implicit arguments.</p>
 <h2 id="defining-handlers">Defining Handlers</h2>
 <p>Let us now define our own handler for the <code class="highlighter-rouge">Amb</code> effect. A handler is
 just an implementation of the effect interface. However, it also
-needs to give the type to interpret the effect into (<code class="highlighter-rouge">Out[A]</code>) and
-a function <code class="highlighter-rouge">unit</code> that lifts pure values into the effect interpretation.</p>
+needs to give the type to interpret the effect into (<code class="highlighter-rouge">List[R]</code>) and
+a function <code class="highlighter-rouge">unit</code> that lifts pure values of type <code class="highlighter-rouge">R</code> into the effect interpretation.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">object</span> <span class="nc">ambHandler</span> <span class="k">extends</span> <span class="nc">Amb</span> <span class="o">{</span>
-  <span class="k">type</span> <span class="kt">Out</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
-  <span class="k">type</span> <span class="kt">State</span> <span class="o">=</span> <span class="nc">Unit</span> <span class="c1">// We don't use the handler state, yet.
-</span>  <span class="k">def</span> <span class="n">flip</span><span class="o">[</span><span class="kt">R</span><span class="o">]()</span> <span class="k">=</span> <span class="n">s</span> <span class="k">=&gt;</span> <span class="n">resume</span> <span class="k">=&gt;</span>
-    <span class="k">for</span> <span class="o">{</span>
-      <span class="n">t</span> <span class="k">&lt;-</span> <span class="n">resume</span><span class="o">(</span><span class="kc">true</span><span class="o">)(</span><span class="n">s</span><span class="o">)</span>
-      <span class="n">f</span> <span class="k">&lt;-</span> <span class="n">resume</span><span class="o">(</span><span class="kc">false</span><span class="o">)(</span><span class="n">s</span><span class="o">)</span>
-    <span class="o">}</span> <span class="k">yield</span> <span class="n">t</span> <span class="o">++</span> <span class="n">f</span>
-  <span class="k">def</span> <span class="n">unit</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">(</span><span class="n">s</span><span class="o">,</span> <span class="n">a</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nc">List</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">def</span> <span class="n">ambList</span><span class="o">[</span><span class="kt">R</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Handler</span><span class="o">.</span><span class="nc">Basic</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">List</span><span class="o">[</span><span class="kt">R</span><span class="o">]]</span> <span class="k">with</span> <span class="nc">Amb</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">unit</span> <span class="k">=</span> <span class="n">a</span> <span class="k">=&gt;</span> <span class="nc">List</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="n">flip</span><span class="o">()</span> <span class="k">=</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="n">resume</span> <span class="k">=&gt;</span> <span class="k">for</span> <span class="o">{</span>
+    <span class="n">ts</span> <span class="k">&lt;-</span> <span class="n">resume</span><span class="o">(</span><span class="kc">true</span><span class="o">)(())</span>
+    <span class="n">fs</span> <span class="k">&lt;-</span> <span class="n">resume</span><span class="o">(</span><span class="kc">false</span><span class="o">)(())</span>
+  <span class="o">}</span> <span class="k">yield</span> <span class="n">ts</span> <span class="o">++</span> <span class="n">fs</span>
 <span class="o">}</span>
 </code></pre>
 </div>
 
+<p>Notice how we use the trait <code class="highlighter-rouge">Handler.Basic</code> which helps us defining
+some abstract type members.</p>
+
 <p>In the handler code we now can see why we defined <code class="highlighter-rouge">flip</code> to return
-<code class="highlighter-rouge">Boolean @@ R</code> before. To implement <code class="highlighter-rouge">flip</code> we get access to the handler
+<code class="highlighter-rouge">Op[Boolean]</code> before. To implement <code class="highlighter-rouge">flip</code> we get access to the handler
 state and the continuation <code class="highlighter-rouge">resume</code> (the remaining program after the flip effect,
 up to the handler).</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>type @@[A, R] =
-  State =&gt;                             // the handler state
-  (A =&gt; State =&gt; Control[Out[R]]) =&gt;   // the continuation
-  Control[Out[R]]                      // the result type
+<div class="highlighter-rouge"><pre class="highlight"><code>type Op[A] =
+  State =&gt;                          // the handler state
+  (A =&gt; State =&gt; Control[Res]) =&gt;   // the continuation
+  Control[Res]                      // the result type
+</code></pre>
+</div>
+<p>In <code class="highlighter-rouge">Handler.Basic</code> the type member <code class="highlighter-rouge">State</code> is set to <code class="highlighter-rouge">Unit</code> and <code class="highlighter-rouge">Res</code>
+is bound to the second type parameter, hence <code class="highlighter-rouge">List[R]</code>. In our example
+<code class="highlighter-rouge">Op</code> is defined to be:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>type Op[A] = Unit =&gt; (A =&gt; Unit =&gt; Control[List[R]]) =&gt; Control[List[R]]
 </code></pre>
 </div>
 
 <h2 id="handling-effects">Handling Effects</h2>
-<p>To handle an effect we use the library function <code class="highlighter-rouge">handle(handler)(state)(prog)</code> which gives
-us a capability for the effect type that <code class="highlighter-rouge">handler</code> implements.</p>
+<p>To handle an effect we use the apply method that is defined on an
+instance of <code class="highlighter-rouge">handler</code>.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">handled</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">ambHandler</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">h</span> <span class="k">=&gt;</span> <span class="n">prog</span> <span class="o">}</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">handled</span><span class="k">:</span> <span class="kt">Control</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="k">=</span> <span class="n">ambList</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">h</span> <span class="k">=&gt;</span> <span class="n">prog</span> <span class="o">}</span>
 </code></pre>
 </div>
 
-<p>After all effects are handled, we can run the effectful computation:</p>
+<p>One way of thinking about algebraic effects and handlers is to think
+as (resumable) exceptions. In our example, the effect operation <code class="highlighter-rouge">flip</code>
+would correspond to <code class="highlighter-rouge">throw</code> and the handler <code class="highlighter-rouge">ambList</code> to a surrounding
+<code class="highlighter-rouge">try { ... }</code>.</p>
+
+<p>After all effects are handled, we can now run the effectful computation:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">scala</span><span class="o">&gt;</span> <span class="n">handled</span><span class="o">.</span><span class="n">run</span><span class="o">()</span>
 <span class="n">res3</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span>

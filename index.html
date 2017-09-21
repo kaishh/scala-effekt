@@ -27,7 +27,7 @@ result actually perform the side-effects always gives the same results.</p>
 
         <p><strong>Effect signature</strong></p>
         <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">Twitter</span> <span class="k">extends</span> <span class="nc">Eff</span> <span class="o">{</span>
-  <span class="k">def</span> <span class="n">userTweets</span><span class="o">[</span><span class="kt">R</span><span class="o">](</span><span class="n">userId</span><span class="k">:</span> <span class="kt">Long</span><span class="o">)</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Tweet</span><span class="o">]</span> <span class="o">@@</span> <span class="n">R</span>
+  <span class="k">def</span> <span class="n">userTweets</span><span class="o">(</span><span class="n">userId</span><span class="k">:</span> <span class="kt">Long</span><span class="o">)</span><span class="k">:</span> <span class="kt">Op</span><span class="o">[</span><span class="kt">List</span><span class="o">[</span><span class="kt">Tweet</span><span class="o">]]</span>
 <span class="o">}</span>
 </code></pre>
         </div>
@@ -39,7 +39,7 @@ result actually perform the side-effects always gives the same results.</p>
     <span class="n">ts2</span> <span class="k">&lt;-</span> <span class="n">userTweets</span><span class="o">(</span><span class="mi">111345</span><span class="o">)</span>
   <span class="o">}</span> <span class="k">yield</span> <span class="n">ts1</span> <span class="o">++</span> <span class="n">ts2</span>
 
-<span class="k">val</span> <span class="n">result</span> <span class="k">=</span> <span class="n">handle</span><span class="o">(</span><span class="n">twitterStub</span><span class="o">)</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">u</span> <span class="k">=&gt;</span> <span class="n">query</span> <span class="o">}</span>
+<span class="k">val</span> <span class="n">result</span> <span class="k">=</span> <span class="n">twitterStub</span> <span class="o">{</span> <span class="k">implicit</span> <span class="n">u</span> <span class="k">=&gt;</span> <span class="n">query</span> <span class="o">}</span>
 </code></pre>
         </div>
       </div>
@@ -51,7 +51,7 @@ result actually perform the side-effects always gives the same results.</p>
 <p>To use <strong>Effekt</strong> (tested with Scala 2.11 and Scala 2.12), include the
 following line to your <code class="highlighter-rouge">build.sbt</code> file:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "de.b-studios" %% "effekt" % "0.1-SNAPSHOT"
+<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "de.b-studios" %% "effekt" % "0.2-SNAPSHOT"
 </code></pre>
 </div>
 
